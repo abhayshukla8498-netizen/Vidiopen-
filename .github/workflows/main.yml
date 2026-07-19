@@ -3,7 +3,7 @@ name: Build Android APK
 on:
   push:
     branches: [ main ]
-  workflow_dispatch: # Isse aap manually bhi build start kar sakte hain
+  workflow_dispatch:
 
 jobs:
   build:
@@ -19,13 +19,21 @@ jobs:
         distribution: 'zulu'
         java-version: '17'
 
-    # Cloud par zip file ko unzip karne ka step
+    # Ye step novaplay.zip ya project.zip dono me se jo mile use unzip kar dega
     - name: Unzip Project Files
       run: |
-        unzip project.zip -d unzipped_project
+        if [ -f "novaplay.zip" ]; then
+          unzip novaplay.zip -d unzipped_project
+          rm -f novaplay.zip
+        elif [ -f "project.zip" ]; then
+          unzip project.zip -d unzipped_project
+          rm -f project.zip
+        else
+          echo "Error: No zip file found!" && exit 1
+        fi
         mv unzipped_project/* . || true
         mv unzipped_project/.* . || true
-        rm -rf unzipped_project project.zip
+        rm -rf unzipped_project
 
     - name: Make Gradle Executable
       run: chmod +x gradlew
