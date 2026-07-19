@@ -1,4 +1,4 @@
-name: Build Android APK
+name: Build Android Release APK
 
 on:
   push:
@@ -44,7 +44,6 @@ jobs:
         fi
         rm -rf unzipped_project
 
-    # YEH STEP AAPKE APP KE LIYE EXACT SAHI GRADLE VERSION (9.3.1) GENERATE KAREGA
     - name: Generate Sahi Gradle Wrapper
       run: |
         gradle wrapper --gradle-version 9.3.1
@@ -52,12 +51,22 @@ jobs:
     - name: Make Gradle Executable
       run: chmod +x gradlew
 
-    - name: Build Debug APK
-      run: ./gradlew assembleDebug
+    # AAPKI CUSTOM PASSWORD SE REAL SIGNING KEYSTORE BANANE KA STEP
+    - name: Generate Custom Release Keystore
+      run: |
+        keytool -genkey -v -keystore my-upload-key.jks -storepass Abhay@2026 -alias upload -keypass Abhay@2026 -keyalg RSA -keysize 2048 -validity 10000 -dname "CN=Abhay Shukla,O=Vidiopen,C=IN"
 
-    - name: Upload APK Artifact
+    # GRADLE KO RELEASE COMMAND DENA AUR ENV VARIABLES CONFIG KARNA
+    - name: Build Real Release APK
+      env:
+        KEYSTORE_PATH: ${{ github.workspace }}/my-upload-key.jks
+        STORE_PASSWORD: Abhay@2026
+        KEY_PASSWORD: Abhay@2026
+      run: ./gradlew assembleRelease
+
+    - name: Upload Real Release APK
       uses: actions/upload-artifact@v4
       with:
-        name: Vidiopen-Debug-APK
-        path: app/build/outputs/apk/debug/app-debug.apk
+        name: Vidiopen-Real-Release-APK
+        path: app/build/outputs/apk/release/app-release.apk
         
