@@ -31,12 +31,10 @@ jobs:
           echo "Error: No zip file found!" && exit 1
         fi
         
-        # Files ko root level par move karna
         if [ -d "unzipped_project/app" ]; then
           mv unzipped_project/* . || true
           mv unzipped_project/.* . || true
         else
-          # Agar nested folder hai toh uske andar se app folder dhoondna
           SUB_DIR=$(find unzipped_project -name "app" -type d -prune | head -n 1)
           if [ ! -z "$SUB_DIR" ]; then
             PROJECT_ROOT=$(dirname "$SUB_DIR")
@@ -46,13 +44,10 @@ jobs:
         fi
         rm -rf unzipped_project
 
-    # AGAR GRADLEW MISSING HAI, TOH YEH STEP USSE KHUD GENERATE KAR DEGA
-    - name: Generate Missing Gradle Wrapper
+    # YEH STEP AAPKE APP KE LIYE EXACT SAHI GRADLE VERSION (9.3.1) GENERATE KAREGA
+    - name: Generate Sahi Gradle Wrapper
       run: |
-        if [ ! -f "gradlew" ]; then
-          echo "gradlew missing! Generating a new Gradle wrapper..."
-          gradle wrapper --gradle-version 8.7
-        fi
+        gradle wrapper --gradle-version 9.3.1
 
     - name: Make Gradle Executable
       run: chmod +x gradlew
@@ -65,3 +60,4 @@ jobs:
       with:
         name: Vidiopen-Debug-APK
         path: app/build/outputs/apk/debug/app-debug.apk
+        
