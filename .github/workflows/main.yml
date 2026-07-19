@@ -31,15 +31,28 @@ jobs:
           echo "Error: No zip file found!" && exit 1
         fi
         
-        # Ye command unzipped folder ke andar jahan bhi gradlew hai, uske saare content ko root par le aayegi
-        GRADLEW_PATH=$(find unzipped_project -name "gradlew" | head -n 1)
-        if [ -z "$GRADLEW_PATH" ]; then
-          echo "Error: gradlew not found anywhere in the zip!" && exit 1
+        # Files ko root level par move karna
+        if [ -d "unzipped_project/app" ]; then
+          mv unzipped_project/* . || true
+          mv unzipped_project/.* . || true
+        else
+          # Agar nested folder hai toh uske andar se app folder dhoondna
+          SUB_DIR=$(find unzipped_project -name "app" -type d -prune | head -n 1)
+          if [ ! -z "$SUB_DIR" ]; then
+            PROJECT_ROOT=$(dirname "$SUB_DIR")
+            mv "$PROJECT_ROOT"/* . || true
+            mv "$PROJECT_ROOT"/.* . || true
+          fi
         fi
-        PROJECT_ROOT=$(dirname "$GRADLEW_PATH")
-        mv "$PROJECT_ROOT"/* . || true
-        mv "$PROJECT_ROOT"/.* . || true
         rm -rf unzipped_project
+
+    # AGAR GRADLEW MISSING HAI, TOH YEH STEP USSE KHUD GENERATE KAR DEGA
+    - name: Generate Missing Gradle Wrapper
+      run: |
+        if [ ! -f "gradlew" ]; then
+          echo "gradlew missing! Generating a new Gradle wrapper..."
+          gradle wrapper --gradle-version 8.7
+        fi
 
     - name: Make Gradle Executable
       run: chmod +x gradlew
