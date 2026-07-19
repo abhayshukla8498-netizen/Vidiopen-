@@ -19,7 +19,7 @@ jobs:
         distribution: 'zulu'
         java-version: '17'
 
-    # Ye step novaplay.zip ya project.zip dono me se jo mile use unzip kar dega
+    # Zip file ko sahi se extract aur organize karne ka step
     - name: Unzip Project Files
       run: |
         if [ -f "novaplay.zip" ]; then
@@ -31,8 +31,15 @@ jobs:
         else
           echo "Error: No zip file found!" && exit 1
         fi
-        mv unzipped_project/* . || true
-        mv unzipped_project/.* . || true
+        
+        # Agar files kisi nested sub-folder me hain, to unhe main level par laayein
+        if [ -d "unzipped_project/novaplay" ]; then
+          mv unzipped_project/novaplay/* . || true
+          mv unzipped_project/novaplay/.* . || true
+        else
+          mv unzipped_project/* . || true
+          mv unzipped_project/.* . || true
+        fi
         rm -rf unzipped_project
 
     - name: Make Gradle Executable
