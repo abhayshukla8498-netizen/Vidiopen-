@@ -19,7 +19,6 @@ jobs:
         distribution: 'zulu'
         java-version: '17'
 
-    # Zip file ko sahi se extract aur organize karne ka step
     - name: Unzip Project Files
       run: |
         if [ -f "novaplay.zip" ]; then
@@ -32,14 +31,14 @@ jobs:
           echo "Error: No zip file found!" && exit 1
         fi
         
-        # Agar files kisi nested sub-folder me hain, to unhe main level par laayein
-        if [ -d "unzipped_project/novaplay" ]; then
-          mv unzipped_project/novaplay/* . || true
-          mv unzipped_project/novaplay/.* . || true
-        else
-          mv unzipped_project/* . || true
-          mv unzipped_project/.* . || true
+        # Ye command unzipped folder ke andar jahan bhi gradlew hai, uske saare content ko root par le aayegi
+        GRADLEW_PATH=$(find unzipped_project -name "gradlew" | head -n 1)
+        if [ -z "$GRADLEW_PATH" ]; then
+          echo "Error: gradlew not found anywhere in the zip!" && exit 1
         fi
+        PROJECT_ROOT=$(dirname "$GRADLEW_PATH")
+        mv "$PROJECT_ROOT"/* . || true
+        mv "$PROJECT_ROOT"/.* . || true
         rm -rf unzipped_project
 
     - name: Make Gradle Executable
@@ -53,4 +52,3 @@ jobs:
       with:
         name: Vidiopen-Debug-APK
         path: app/build/outputs/apk/debug/app-debug.apk
-        
